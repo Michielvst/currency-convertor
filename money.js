@@ -2,6 +2,7 @@ const fromSelect = document.querySelector('[name="from_currency"]');
 const toSelect = document.querySelector('[name="to_currency"]');
 const input = document.querySelector('[name="from_amount"]');
 const output = document.querySelector('.to_amount');
+const form = document.querySelector('form');
 const endpoint = 'https://api.exchangeratesapi.io/latest';
 const ratesbyBase = {};
 
@@ -58,11 +59,23 @@ async function convert(amount, from, to) {
   if(!ratesbyBase[from]){
     ratesbyBase[from] = await fetchRates(from);
   }
-  console.log(ratesbyBase);
+  const rate = ratesbyBase[from][to];
+  return amount * rate;
+}
+
+// format currency
+function formatCurrency(amount, currency) {
+  return Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency
+  }).format(amount);
 }
 
 // handle input
-
+async function handleInput() {
+   const rawAmount = await convert(input.value, fromSelect.value, toSelect.value);
+   output.innerHTML = formatCurrency(rawAmount, toSelect.value);
+}
 
 // populate option elements
 const optionsHTML = generateOptions(currencies);
@@ -70,6 +83,4 @@ fromSelect.innerHTML = optionsHTML;
 toSelect.innerHTML = optionsHTML;
 
 // eventlistener
-
-
-fetchRates('CAD');
+form.addEventListener('input', handleInput);
